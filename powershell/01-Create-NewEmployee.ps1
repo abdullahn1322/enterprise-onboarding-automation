@@ -1,19 +1,144 @@
-<#
-.SYNOPSIS
-Creates a new employee account in Microsoft Entra ID.
+# ============================================
+# Enterprise Onboarding Automation
+# Create New Employee from CSV
+# ============================================
 
-.DESCRIPTION
-This script automates the onboarding process for new employees by creating
-a Microsoft Entra ID user, populating user attributes, assigning a manager,
-adding the user to the appropriate security group, and generating a log.
+Clear-Host
 
-.AUTHOR
-Abdullah Nazim
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host " Enterprise Onboarding Automation" -ForegroundColor Cyan
+Write-Host " Create Users in Microsoft Entra ID" -ForegroundColor Cyan
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host ""
 
-.PROJECT
-Enterprise Onboarding Automation
-Apex Innovations
+# ==========================================================
+# Authentication
+# ==========================================================
 
-.VERSION
-1.0
-#>
+# Load Configuration
+$Config = Get-Content ".\config\settings.json" | ConvertFrom-Json
+
+$TenantId = $Config.TenantId
+$ClientId = $Config.ClientId
+$ClientSecret = $Config.ClientSecret
+
+$Body = @{
+    grant_type    = "client_credentials"
+    client_id     = $ClientId
+    client_secret = $ClientSecret
+    scope         = "https://graph.microsoft.com/.default"
+}
+
+try {
+
+    Write-Host "Authenticating to Microsoft Graph..." -ForegroundColor Yellow
+
+    $TokenResponse = Invoke-RestMethod `
+        -Method POST `
+        -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token" `
+        -Body $Body `
+        -ErrorAction Stop
+
+    Write-Host "Authentication Successful!" -ForegroundColor Green
+    Write-Host ""
+
+}
+catch {
+
+    Write-Host "Authentication Failed!" -ForegroundColor Red
+    $_.Exception.Message
+
+    if ($_.ErrorDetails.Message) {
+        $_.ErrorDetails.Message
+    }
+
+    return
+}
+
+# ==========================================================
+# Microsoft Graph Header
+# ==========================================================
+
+$Headers = @{
+    Authorization = "Bearer $($TokenResponse.access_token)"
+    "Content-Type" = "application/json"
+}
+
+# ==========================================================
+# Read CSV
+# ==========================================================
+
+$CsvPath = ".\input\01-NewEmployees.csv"
+
+if (!(Test-Path $CsvPath)) {
+
+    Write-Host "CSV file not found!" -ForegroundColor Red
+    return
+}
+
+$Users = Import-Csv $CsvPath
+
+Write-Host "$($Users.Count) employee(s) found in CSV." -ForegroundColor Cyan
+Write-Host ""
+
+# ==========================================================
+# Create Users
+# ==========================================================
+
+foreach ($User in $Users) {
+
+    Write-Host "----------------------------------------" -ForegroundColor DarkGray
+    Write-Host "Creating User: $($User.DisplayName)" -ForegroundColor Yellow
+
+    $MailNickname = ($User.UserPrincipalName -split "@")[0]
+
+    $PasswordProfile = @{
+        password = "Welcome@12345!"
+        forceChangePasswordNextSignIn = $true
+    }
+
+    $NewUser = @{
+        accountEnabled    = $true
+        displayName       = $User.DisplayName
+        givenName         = $User.FirstName
+        surname           = $User.LastName
+        userPrincipalName = $User.UserPrincipalName
+        mailNickname      = $MailNickname
+        department        = $User.Department
+        officeLocation    = $User.OfficeLocation
+        jobTitle          = $User.JobTitle
+        employeeId        = $User.EmployeeID
+        companyName       = $User.CompanyName
+        passwordProfile   = $PasswordProfile
+    }
+
+    try {
+
+        Invoke-RestMethod `
+            -Method POST `
+            -Uri "https://graph.microsoft.com/v1.0/users" `
+            -Headers $Headers `
+            -Body ($NewUser | ConvertTo-Json -Depth 10) `
+            -ErrorAction Stop
+
+        Write-Host "SUCCESS - User created successfully." -ForegroundColor Green
+    }
+    catch {
+
+        Write-Host "FAILED - Unable to create user." -ForegroundColor Red
+
+        if ($_.ErrorDetails.Message) {
+            Write-Host ""
+            Write-Host $_.ErrorDetails.Message
+        }
+        else {
+            Write-Host $_.Exception.Message
+        }
+    }
+
+    Write-Host ""
+}
+
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host " Script Completed" -ForegroundColor Green
+Write-Host "==============================================" -ForegroundColor Cyan

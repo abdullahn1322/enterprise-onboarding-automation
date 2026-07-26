@@ -1,0 +1,5 @@
+config/settings.json
+
+logs/*.log
+
+.vscode/
