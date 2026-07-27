@@ -44,12 +44,14 @@ $Body = @{
 try {
 
     Write-Host "Authenticating to Microsoft Graph..." -ForegroundColor Yellow
-    $AccessToken = $TokenResponse.access_token
+
     $TokenResponse = Invoke-RestMethod `
         -Method POST `
         -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token" `
         -Body $Body `
         -ErrorAction Stop
+
+    $AccessToken = $TokenResponse.access_token
 
     Write-Host "Authentication Successful!" -ForegroundColor Green
     Write-Host ""
