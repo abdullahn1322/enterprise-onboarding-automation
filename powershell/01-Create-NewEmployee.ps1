@@ -29,6 +29,8 @@ Import-Module $ModulePath
 $ValidationModule = Join-Path $ProjectRoot "modules\Validation.psm1"
 
 Import-Module $ValidationModule
+$LoggingModule = Join-Path $ProjectRoot "modules\Logging.psm1"
+Import-Module $LoggingModule
 
 $TenantId = $Config.TenantId
 $ClientId = $Config.ClientId
@@ -55,6 +57,9 @@ try {
 
     Write-Host "Authentication Successful!" -ForegroundColor Green
     Write-Host ""
+    Write-Log `
+    -Level SUCCESS `
+    -Message "Authentication successful."
 
 }
 catch {
@@ -104,15 +109,25 @@ foreach ($User in $Users) {
     Write-Host "----------------------------------------" -ForegroundColor DarkGray
     Write-Host "Creating User: $($User.DisplayName)" -ForegroundColor Yellow
     Write-Host "Checking if user already exists..." -ForegroundColor Cyan
+    Write-Log `
+    -Level INFO `
+    -Message "Checking user: $($User.UserPrincipalName)"
 
 $UserExists = Test-UserExists `
     -UserPrincipalName $User.UserPrincipalName `
     -AccessToken $AccessToken
 
+ Write-Log `
+    -Level WARNING `
+    -Message "Skipped existing user: $($User.UserPrincipalName)"
+
 if ($UserExists) {
 
    Write-Host "User '$($User.DisplayName)' already exists. Skipping..." -ForegroundColor Yellow
     continue
+    Write-Log `
+    -Level WARNING `
+    -Message "User already exists: $($User.UserPrincipalName)"
 
 }
 
@@ -148,8 +163,14 @@ if ($UserExists) {
             -ErrorAction Stop
 
         Write-Host "SUCCESS - User created successfully." -ForegroundColor Green
+        Write-Log `
+    -Level SUCCESS `
+    -Message "User created successfully: $($User.UserPrincipalName)"
     }
     catch {
+Write-Log `
+    -Level ERROR `
+    -Message "Failed to create user: $($User.UserPrincipalName)"
 
         Write-Host "FAILED - Unable to create user." -ForegroundColor Red
 
@@ -164,7 +185,9 @@ if ($UserExists) {
 
     Write-Host ""
 }
-
+Write-Log `
+    -Level INFO `
+    -Message "Provisioning process completed."
 Write-Host "==============================================" -ForegroundColor Cyan
 Write-Host " Script Completed" -ForegroundColor Green
 Write-Host "==============================================" -ForegroundColor Cyan
