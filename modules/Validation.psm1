@@ -24,8 +24,11 @@ function Test-UserExists {
     }
     catch {
 
+    if ($_.Exception.Response.StatusCode.value__ -eq 404) {
         return $false
-
     }
 
+    throw
+
+}
 }

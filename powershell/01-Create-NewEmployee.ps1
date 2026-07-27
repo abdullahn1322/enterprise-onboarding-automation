@@ -26,6 +26,9 @@ $Config = Get-Content $ConfigPath | ConvertFrom-Json
 # Import Password Generator Module
 $ModulePath = Join-Path $ProjectRoot "modules\PasswordGenerator.psm1"
 Import-Module $ModulePath
+$ValidationModule = Join-Path $ProjectRoot "modules\Validation.psm1"
+
+Import-Module $ValidationModule
 
 $TenantId = $Config.TenantId
 $ClientId = $Config.ClientId
@@ -41,7 +44,7 @@ $Body = @{
 try {
 
     Write-Host "Authenticating to Microsoft Graph..." -ForegroundColor Yellow
-
+    $AccessToken = $TokenResponse.access_token
     $TokenResponse = Invoke-RestMethod `
         -Method POST `
         -Uri "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token" `
@@ -98,6 +101,18 @@ foreach ($User in $Users) {
 
     Write-Host "----------------------------------------" -ForegroundColor DarkGray
     Write-Host "Creating User: $($User.DisplayName)" -ForegroundColor Yellow
+    Write-Host "Checking if user already exists..." -ForegroundColor Cyan
+
+$UserExists = Test-UserExists `
+    -UserPrincipalName $User.UserPrincipalName `
+    -AccessToken $AccessToken
+
+if ($UserExists) {
+
+   Write-Host "User '$($User.DisplayName)' already exists. Skipping..." -ForegroundColor Yellow
+    continue
+
+}
 
     $MailNickname = ($User.UserPrincipalName -split "@")[0]
 
