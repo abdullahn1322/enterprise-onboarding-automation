@@ -16,7 +16,16 @@ Write-Host ""
 # ==========================================================
 
 # Load Configuration
-$Config = Get-Content ".\config\settings.json" | ConvertFrom-Json
+# Project Root
+$ProjectRoot = Split-Path $PSScriptRoot -Parent
+
+# Configuration File
+$ConfigPath = Join-Path $ProjectRoot "config\settings.json"
+$Config = Get-Content $ConfigPath | ConvertFrom-Json
+
+# Import Password Generator Module
+$ModulePath = Join-Path $ProjectRoot "modules\PasswordGenerator.psm1"
+Import-Module $ModulePath
 
 $TenantId = $Config.TenantId
 $ClientId = $Config.ClientId
@@ -93,7 +102,7 @@ foreach ($User in $Users) {
     $MailNickname = ($User.UserPrincipalName -split "@")[0]
 
     $PasswordProfile = @{
-        password = "Welcome@12345!"
+        password = New-RandomPassword
         forceChangePasswordNextSignIn = $true
     }
 
