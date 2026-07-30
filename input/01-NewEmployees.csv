@@ -1,2 +1,2 @@
-FirstName,LastName,DisplayName,UserPrincipalName,JobTitle,Department,OfficeLocation,EmployeeID,EmployeeType,CompanyName,Manager
-Mia,Thompson,Mia Thompson,mia.thompson@abdullah241191outlook.onmicrosoft.com,Junior Systems Administrator,IT,Hyderabad,EMP1016,Full-Time,Apex Innovations,James Carter
+FirstName,LastName,DisplayName,UserPrincipalName,JobTitle,Department,OfficeLocation,EmployeeID,EmployeeType,CompanyName,ManagerEmail
+Bassam,shaikh,Bassam Shaikh,bassam.shaikh@abdullah241191outlook.onmicrosoft.com,AI Engineer,IT,Riyadh,EMP2015,Full-Time,Apex Innovations,james.cartar@abdullah241191outlook.onmicrosoft.com

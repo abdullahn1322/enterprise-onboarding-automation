@@ -32,6 +32,19 @@ Import-Module $ValidationModule
 $LoggingModule = Join-Path $ProjectRoot "modules\Logging.psm1"
 Import-Module $LoggingModule
 
+$ReportingModule = Join-Path $ProjectRoot "modules\Reporting.psm1"
+Import-Module $ReportingModule
+
+$GroupAssignmentModule = Join-Path $ProjectRoot "modules\GroupAssignment.psm1"
+Import-Module $GroupAssignmentModule -Force
+
+Write-Host "Loading module from: $GroupAssignmentModule" -ForegroundColor Yellow
+
+$ManagerModule = Join-Path $ProjectRoot "modules\ManagerAssignment.psm1"
+Import-Module $ManagerModule -Force
+
+Import-Module $ValidationModule
+
 $TenantId = $Config.TenantId
 $ClientId = $Config.ClientId
 $ClientSecret = $Config.ClientSecret
@@ -101,8 +114,20 @@ Write-Host "$($Users.Count) employee(s) found in CSV." -ForegroundColor Cyan
 Write-Host ""
 
 # ==========================================================
-# Create Users
+# Create Users & Groups
 # ==========================================================
+$DepartmentGroups = @("SG-IT")
+Write-Host "DEBUG Groups: $($DepartmentGroups -join ', ')" -ForegroundColor Magenta
+
+Write-Host "Department: $($User.Department)" -ForegroundColor Cyan
+
+Write-Host "Groups to assign:" -ForegroundColor Cyan
+
+$DepartmentGroups | ForEach-Object {
+
+    Write-Host "  - $_" -ForegroundColor Gray
+
+}
 
 foreach ($User in $Users) {
 
@@ -124,6 +149,12 @@ $UserExists = Test-UserExists `
 if ($UserExists) {
 
    Write-Host "User '$($User.DisplayName)' already exists. Skipping..." -ForegroundColor Yellow
+   Add-ProvisioningResult `
+    -DisplayName $User.DisplayName `
+    -UserPrincipalName $User.UserPrincipalName `
+    -Department $User.Department `
+    -Status "Skipped" `
+    -Reason "User already exists"
     continue
     Write-Log `
     -Level WARNING `
@@ -155,22 +186,52 @@ if ($UserExists) {
 
     try {
 
-        Invoke-RestMethod `
-            -Method POST `
-            -Uri "https://graph.microsoft.com/v1.0/users" `
-            -Headers $Headers `
-            -Body ($NewUser | ConvertTo-Json -Depth 10) `
-            -ErrorAction Stop
+         $CreatedUser = Invoke-RestMethod `
+        -Method POST `
+        -Uri "https://graph.microsoft.com/v1.0/users" `
+        -Headers $Headers `
+        -Body ($NewUser | ConvertTo-Json -Depth 10) `
+        -ErrorAction Stop
 
-        Write-Host "SUCCESS - User created successfully." -ForegroundColor Green
+    # Assign Security Groups
+    $DepartmentGroups = Get-DepartmentGroups -Department $User.Department
+
+    Add-UserToGroups `
+        -AccessToken $AccessToken `
+        -UserId $CreatedUser.id `
+        -Groups $DepartmentGroups
+
+    # Assign Manager
+    Set-UserManager `
+        -AccessToken $AccessToken `
+        -UserId $CreatedUser.id `
+        -ManagerEmail $User.ManagerEmail
+
+    Write-Host "SUCCESS - User created successfully." -ForegroundColor Green
+
+
+        Add-ProvisioningResult `
+    -DisplayName $User.DisplayName `
+    -UserPrincipalName $User.UserPrincipalName `
+    -Department $User.Department `
+    -Status "Created" `
+    -Reason "Success"
         Write-Log `
     -Level SUCCESS `
     -Message "User created successfully: $($User.UserPrincipalName)"
+
     }
     catch {
 Write-Log `
     -Level ERROR `
     -Message "Failed to create user: $($User.UserPrincipalName)"
+
+    Add-ProvisioningResult `
+    -DisplayName $User.DisplayName `
+    -UserPrincipalName $User.UserPrincipalName `
+    -Department $User.Department `
+    -Status "Failed" `
+    -Reason $_.Exception.Message
 
         Write-Host "FAILED - Unable to create user." -ForegroundColor Red
 
@@ -185,6 +246,7 @@ Write-Log `
 
     Write-Host ""
 }
+
 Write-Log `
     -Level INFO `
     -Message "Provisioning process completed."
