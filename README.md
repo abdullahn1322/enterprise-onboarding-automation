@@ -34,4 +34,23 @@ The project is designed to mirror real-world enterprise onboarding workflows rat
 ## 📂 Repository Structure
 
 ```text
-enterprise-onboarding-automation
+
+✔ Employee Joiner Automation
+
+✔ Employee Mover Automation
+
+✔ Microsoft Graph API
+
+✔ Group Management
+
+✔ Manager Assignment
+
+✔ CSV Driven Automation
+
+✔ Logging
+
+✔ Reporting
+
+✔ Modular PowerShell Design
+
+✔ Azure Entra ID
