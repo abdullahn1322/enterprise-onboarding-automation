@@ -17,10 +17,38 @@ function Set-UserManager {
 
     try {
 
-        $Manager = Invoke-RestMethod `
-            -Method GET `
-            -Uri "https://graph.microsoft.com/v1.0/users/$ManagerEmail" `
-            -Headers $Headers
+     $Managers = Invoke-RestMethod `
+    -Method GET `
+    -Uri "https://graph.microsoft.com/v1.0/users" `
+    -Headers $Headers
+
+$Managers = @()
+$Uri = "https://graph.microsoft.com/v1.0/users?`$top=999"
+
+do {
+
+    $Response = Invoke-RestMethod `
+        -Method GET `
+        -Uri $Uri `
+        -Headers $Headers
+
+    $Managers += $Response.value
+
+    $Uri = $Response.'@odata.nextLink'
+
+} while ($Uri)
+
+$Manager = $Managers | Where-Object {
+    $_.userPrincipalName.Trim().ToLower() -eq $ManagerEmail.Trim().ToLower()
+} | Select-Object -First 1
+
+Write-Host ""
+
+if ($null -eq $Manager) {
+    Write-Host "Manager '$ManagerEmail' not found." -ForegroundColor Red
+    return
+}
+
 
         $Body = @{
             "@odata.id" = "https://graph.microsoft.com/v1.0/users/$($Manager.id)"
@@ -37,11 +65,18 @@ function Set-UserManager {
     }
     catch {
 
-        Write-Host "Manager assignment failed." -ForegroundColor Red
-        Write-Host $_.Exception.Message
+        Write-Host "========== MANAGER ERROR ==========" -ForegroundColor Red
 
+    Write-Host $_.Exception.Message -ForegroundColor Yellow
+
+    Write-Host $_.InvocationInfo.PositionMessage -ForegroundColor Yellow
+
+    if ($_.ErrorDetails.Message) {
+        Write-Host $_.ErrorDetails.Message -ForegroundColor Yellow
     }
 
+    throw
+    }
 }
 
 Export-ModuleMember -Function Set-UserManager

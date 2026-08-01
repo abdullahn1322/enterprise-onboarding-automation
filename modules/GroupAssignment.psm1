@@ -8,7 +8,11 @@ function Get-DepartmentGroups {
 
         "IT" {
             Write-Host ">>> NEW GROUP MODULE LOADED <<<" -ForegroundColor Magenta
-return @("SG-IT")
+            return @("SG-IT")
+        }
+
+        "HR" {
+            return @("SG-HR")
         }
 
         default {
@@ -37,13 +41,11 @@ function Add-UserToGroups {
             Write-Host ""
             Write-Host "Assigning group: $GroupName" -ForegroundColor Cyan
 
-            # Retrieve all groups
             $AllGroups = Invoke-RestMethod `
                 -Method GET `
                 -Uri "https://graph.microsoft.com/v1.0/groups" `
                 -Headers $Headers
 
-            # Find the group by display name
             $Group = $AllGroups.value | Where-Object {
                 $_.displayName -eq $GroupName
             }
@@ -52,12 +54,12 @@ function Add-UserToGroups {
 
                 Write-Host "Group '$GroupName' not found." -ForegroundColor Yellow
                 continue
-
             }
 
             $GroupId = $Group.id
 
             Write-Host "Found Group ID: $GroupId" -ForegroundColor DarkGray
+            Write-Host "Adding UserId $UserId to GroupId $GroupId"
 
             $Body = @{
                 "@odata.id" = "https://graph.microsoft.com/v1.0/directoryObjects/$UserId"
@@ -69,18 +71,61 @@ function Add-UserToGroups {
                 -Headers $Headers `
                 -Body $Body
 
-            Write-Host "Adding UserId $UserId to GroupId $GroupId" -ForegroundColor Yellow
-
+            Write-Host "Added user to '$GroupName' successfully." -ForegroundColor Green
         }
         catch {
 
-            Write-Host "Failed to assign user to '$GroupName'" -ForegroundColor Red
-            Write-Host $_ -ForegroundColor DarkRed
+          Write-Host "User is already a member of '$GroupName'. Skipping..." -ForegroundColor Yellow
 
         }
-
     }
-
 }
 
-Export-ModuleMember -Function Get-DepartmentGroups, Add-UserToGroups
+function Remove-UserFromGroup {
+
+    param(
+        [string]$AccessToken,
+        [string]$UserId,
+        [string]$GroupName
+    )
+
+    $Headers = @{
+        Authorization = "Bearer $AccessToken"
+        "Content-Type" = "application/json"
+    }
+
+    try {
+
+        Write-Host ""
+        Write-Host "Removing user from group: $GroupName" -ForegroundColor Yellow
+
+        $AllGroups = Invoke-RestMethod `
+            -Method GET `
+            -Uri "https://graph.microsoft.com/v1.0/groups" `
+            -Headers $Headers
+
+        $Group = $AllGroups.value | Where-Object {
+            $_.displayName -eq $GroupName
+        }
+
+        if (-not $Group) {
+
+            Write-Host "Group '$GroupName' not found." -ForegroundColor Red
+            return
+        }
+
+        Invoke-RestMethod `
+            -Method DELETE `
+            -Uri "https://graph.microsoft.com/v1.0/groups/$($Group.id)/members/$UserId/`$ref" `
+            -Headers $Headers
+
+        Write-Host "Removed user from '$GroupName' successfully." -ForegroundColor Green
+    }
+    catch {
+
+        Write-Host "User is not a member of '$GroupName'. Skipping..." -ForegroundColor Yellow
+
+    }
+}
+
+Export-ModuleMember -Function Get-DepartmentGroups, Add-UserToGroups, Remove-UserFromGroup

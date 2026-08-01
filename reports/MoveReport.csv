@@ -1,0 +1,3 @@
+"Timestamp","UserPrincipalName","OldDepartment","NewDepartment","OldGroup","NewGroup","Status","Reason"
+"2026-07-31 17:26:01","bassam.shaikh@abdullahn241191outlook.onmicrosoft.com","","HR","SG-IT","SG-HR","Failed","Response status code does not indicate success: 404 (Not Found)."
+"2026-07-31 20:18:34","bassam.shaikh@abdullah241191outlook.onmicrosoft.comm","","HR","SG-IT","SG-HR","Failed","Response status code does not indicate success: 400 (Bad Request)."

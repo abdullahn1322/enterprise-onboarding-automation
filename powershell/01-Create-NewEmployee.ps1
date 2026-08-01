@@ -45,6 +45,8 @@ Import-Module $ManagerModule -Force
 
 Import-Module $ValidationModule
 
+Import-Module "$PSScriptRoot\..\modules\Authentication.psm1" -Force
+
 $TenantId = $Config.TenantId
 $ClientId = $Config.ClientId
 $ClientSecret = $Config.ClientSecret
@@ -66,14 +68,15 @@ try {
         -Body $Body `
         -ErrorAction Stop
 
-    $AccessToken = $TokenResponse.access_token
+   $AccessToken = Get-GraphAccessToken `
+    -TenantId $TenantId `
+    -ClientId $ClientId `
+    -ClientSecret $ClientSecret
 
-    Write-Host "Authentication Successful!" -ForegroundColor Green
-    Write-Host ""
-    Write-Log `
-    -Level SUCCESS `
-    -Message "Authentication successful."
-
+$Headers = @{
+    Authorization = "Bearer $AccessToken"
+    "Content-Type" = "application/json"
+}
 }
 catch {
 
