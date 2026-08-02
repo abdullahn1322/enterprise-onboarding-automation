@@ -93,7 +93,6 @@ foreach ($User in $Employees)
     try
     {
 
-      $UPN = $User.UserPrincipalName.Trim()
       
 
 Write-Host "Searching user..." -ForegroundColor Cyan

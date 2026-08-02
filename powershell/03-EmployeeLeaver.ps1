@@ -144,7 +144,7 @@ Write-Host "User account disabled successfully." -ForegroundColor Green
 Write-Host ""
 Write-Host "Revoking sign-in sessions..." -ForegroundColor Cyan
 
-$RevokeResponse = Invoke-RestMethod `
+$null = Invoke-RestMethod `
     -Method POST `
     -Uri "https://graph.microsoft.com/v1.0/users/$UserId/revokeSignInSessions" `
     -Headers $Headers
