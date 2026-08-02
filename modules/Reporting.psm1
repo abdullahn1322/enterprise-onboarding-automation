@@ -61,19 +61,61 @@ function Add-MoveResult {
     $ReportFile = Join-Path $ReportFolder "MoveReport.csv"
 
     $Result = [PSCustomObject]@{
+
+    Timestamp         = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    UserPrincipalName = $UserPrincipalName
+    OldDepartment     = $OldDepartment
+    NewDepartment     = $NewDepartment
+    OldGroup          = $OldGroup
+    NewGroup          = $NewGroup
+    Status            = $Status
+    Reason            = $Reason
+
+}
+
+$Result | Export-Csv `
+    -Path $ReportFile `
+    -Append `
+    -NoTypeInformation
+
+}
+
+function Add-LeaverResult {
+
+    param(
+        [string]$UserPrincipalName,
+        [string]$DisplayName,
+        [string]$AccountDisabled,
+        [string]$SessionsRevoked,
+        [string]$GroupsRemoved,
+        [string]$Status,
+        [string]$Reason
+    )
+
+    $ProjectRoot = Split-Path $PSScriptRoot -Parent
+    $ReportFolder = Join-Path $ProjectRoot "reports"
+
+    if (!(Test-Path $ReportFolder)) {
+        New-Item -ItemType Directory -Path $ReportFolder | Out-Null
+    }
+
+    $ReportFile = Join-Path $ReportFolder "LeaverReport.csv"
+
+    $Result = [PSCustomObject]@{
+
         Timestamp         = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
         UserPrincipalName = $UserPrincipalName
-        OldDepartment     = $OldDepartment
-        NewDepartment     = $NewDepartment
-        OldGroup          = $OldGroup
-        NewGroup          = $NewGroup
+        DisplayName       = $DisplayName
+        AccountDisabled   = $AccountDisabled
+        SessionsRevoked   = $SessionsRevoked
+        GroupsRemoved     = $GroupsRemoved
         Status            = $Status
         Reason            = $Reason
+
     }
 
     $Result | Export-Csv `
         -Path $ReportFile `
         -Append `
-        -NoTypeInformation `
-        -Force
+        -NoTypeInformation
 }
