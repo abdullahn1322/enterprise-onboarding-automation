@@ -1,37 +1,93 @@
 # Business Requirements
 
-## Project
+## 1. Project Overview
 
-Enterprise Onboarding Automation
+Modern organizations manage employee identities through a Joiner, Mover, and Leaver (JML) lifecycle. Performing these activities manually can result in delays, inconsistent configurations, and security risks.
 
----
-
-## Business Scenario
-
-Apex Innovations hires new employees every week across multiple global offices.
-
-The Identity and Access Management (IAM) team is responsible for securely provisioning identities, assigning appropriate access, and ensuring all onboarding activities follow company security standards.
+This project automates the employee identity lifecycle using Microsoft Entra ID and Microsoft Graph API. The solution provisions new employees, updates existing employee information, and securely deprovisions departing employees through modular PowerShell automation.
 
 ---
 
-## Business Objectives
+## 2. Business Problem
 
-- Standardize the employee onboarding process.
-- Reduce manual provisioning errors.
-- Apply least privilege access.
-- Automate repetitive IAM tasks.
-- Improve auditability.
-- Demonstrate enterprise IAM best practices.
+Many organizations still perform identity administration manually, resulting in:
+
+- Delayed user provisioning
+- Incorrect group assignments
+- Inconsistent user attributes
+- Human errors
+- Lack of centralized reporting
+- Limited audit visibility
 
 ---
 
-## Scope
+## 3. Business Objectives
 
-This project focuses on:
+The project aims to:
 
-- User provisioning
-- Group assignment
-- Naming conventions
-- Microsoft Entra ID administration
-- PowerShell automation
-- Microsoft Graph integration
+- Automate employee onboarding (Joiner)
+- Automate employee department transfers (Mover)
+- Automate employee offboarding (Leaver)
+- Reduce manual administrative effort
+- Improve identity consistency
+- Generate reports for auditing purposes
+- Maintain centralized logging
+- Demonstrate enterprise IAM automation using Microsoft Entra ID
+
+---
+
+## 4. Functional Requirements
+
+### Employee Joiner
+
+- Create new employee accounts
+- Configure user profile attributes
+- Assign manager
+- Assign security groups
+- Generate provisioning reports
+- Write audit logs
+
+### Employee Mover
+
+- Update user attributes
+- Update department
+- Update office location
+- Update company information
+- Change security group membership
+- Update reporting manager
+- Generate movement reports
+
+### Employee Leaver
+
+- Disable user accounts
+- Revoke active sign-in sessions
+- Remove security group memberships
+- Generate offboarding reports
+- Write audit logs
+
+---
+
+## 5. Non-Functional Requirements
+
+The solution should:
+
+- Authenticate securely using Microsoft Graph API
+- Follow a modular PowerShell architecture
+- Support reusable automation modules
+- Process CSV input files
+- Generate CSV reports
+- Maintain execution logs
+- Provide clear error handling
+
+---
+
+## 6. Expected Business Benefits
+
+The solution provides:
+
+- Faster employee lifecycle processing
+- Reduced manual administration
+- Improved consistency
+- Better audit readiness
+- Centralized reporting
+- Standardized identity management

@@ -1,64 +1,60 @@
-# User Lifecycle
+# User Identity Lifecycle
 
 ## Overview
 
-The Joiner-Mover-Leaver (JML) process is the foundation of Identity and Access Management (IAM).
-
-It defines how employee identities are managed throughout their employment, ensuring users receive the correct access at the right time while maintaining organizational security.
+The project automates the complete employee identity lifecycle using the Joiner, Mover, and Leaver (JML) model.
 
 ---
 
-# Joiner
+## Joiner
 
-A Joiner is a newly hired employee.
+Creates a new employee identity.
 
-## IAM Responsibilities
+Activities include:
 
-- Create the user account.
-- Assign a username and email address.
-- Populate user attributes.
-- Assign department.
-- Add the user to the correct security groups.
-- Assign required licenses.
-- Enable Multi-Factor Authentication (MFA).
-- Verify account creation.
+- User creation
+- Attribute configuration
+- Manager assignment
+- Security group assignment
+- Reporting
+- Logging
 
 ---
 
-# Mover
+## Mover
 
-A Mover is an employee whose role, department, or location changes.
+Updates employee identity.
 
-## IAM Responsibilities
+Activities include:
 
-- Update user attributes.
-- Remove unnecessary permissions.
-- Assign new group memberships.
-- Update job title and department.
-- Verify new access follows the principle of least privilege.
-
----
-
-# Leaver
-
-A Leaver is an employee who leaves the organization.
-
-## IAM Responsibilities
-
-- Disable the user account.
-- Revoke active sessions.
-- Remove group memberships.
-- Archive user data according to company policy.
-- Delete the account after the retention period.
+- Department changes
+- Job title updates
+- Office location updates
+- Company updates
+- Manager updates
+- Security group changes
+- Reporting
+- Logging
 
 ---
 
-# Benefits
+## Leaver
 
-Implementing the Joiner-Mover-Leaver process helps organizations:
+Securely deprovisions employee identities.
 
-- Improve security
-- Reduce manual administration
-- Standardize identity management
-- Support compliance and auditing
-- Reduce orphaned accounts
+Activities include:
+
+- Account disablement
+- Session revocation
+- Security group removal
+- Reporting
+- Logging
+
+---
+
+## Lifecycle Benefits
+
+- Standardized identity management
+- Improved security
+- Reduced manual administration
+- Better audit readiness
